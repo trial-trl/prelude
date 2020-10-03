@@ -1,0 +1,167 @@
+/*
+(c) 2020 TRIAL.
+Created on Feb 25, 2020, 8:39:18 PM.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+/*
+    Created on : Feb 25, 2020, 8:39:18 PM
+    Author     : MLSM
+*/
+
+@import '_include-media';
+@import '_themes';
+@import 'variables-site/_variables-site';
+@import 'mixins/_mixins-master';
+
+$safe-area-spacing: 30px;
+
+@mixin themify($themes: $themes) {
+  @each $theme, $map in $themes {
+    .theme-#{$theme} & {
+      $theme-map: () !global;
+      @each $key, $submap in $map {
+        $value: map-get(map-get($themes, $theme), '#{$key}');
+        $theme-map: map-merge($theme-map, ($key: $value)) !global;
+      }
+
+      @content;
+      $theme-map: null !global;
+    }
+  }
+}
+
+@function themed($key) {
+  @return map-get($theme-map, $key);
+}
+
+@mixin dropShadow() {
+  box-shadow: 0 10px 20px rgba(#342046, .5);
+}
+
+
+
+
+
+/*
+A simple little SCSS mixin for creating scrim gradients
+Inspired by Andreas Larson - https://github.com/larsenwork
+https://css-tricks.com/easing-linear-gradients/
+*/
+
+/*
+Smooth linear-gradients (Sass Founction)
+https://codepen.io/readymadegogo/pen/pPLJgR
+*/
+@function scrim-gradient($color: #000, $stop-at: 1) {
+  $scrim-gradient: (
+    // alpha: stop
+    1: 0%,
+    0.738: 19% * $stop-at,
+    0.541: 34% * $stop-at,
+    0.382: 47% * $stop-at,
+    0.278: 56.5% * $stop-at,
+    0.194: 65% * $stop-at,
+    0.126: 73% * $stop-at,
+    0.075: 80.2% * $stop-at,
+    0.042: 86.1% * $stop-at,
+    0.021: 91% * $stop-at,
+    0.008: 95.2% * $stop-at,
+    0.002: 98.2% * $stop-at,
+    0: 100% * $stop-at
+  );
+  @if type-of($color) != color {
+    @return null;
+  }
+  $rgba: "#{red($color)},#{green($color)},#{blue($color)}";
+  $color-stops: ();
+  @each $alpha, $stop in $scrim-gradient {
+    $color-stops: append($color-stops, unquote("rgba(#{$rgba}, #{$alpha}) #{$stop}"), "comma");
+  }
+  @return $color-stops;
+}
+
+@function easeOutSine-gradient($color: #000, $stop-at: 1) {
+  $easeOutSine-gradient: (
+    // alpha: stop
+    1: 0%,
+    0.917: 5.3% * $stop-at,
+    0.834: 10.6% * $stop-at,
+    0.753: 15.9% * $stop-at,
+    0.672: 21.3% * $stop-at,
+    0.591: 26.8% * $stop-at,
+    0.511: 32.5% * $stop-at,
+    0.433: 38.4% * $stop-at,
+    0.357: 44.5% * $stop-at,
+    0.283: 50.9% * $stop-at,
+    0.213: 57.7% * $stop-at,
+    0.147: 65% * $stop-at,
+    0.089: 72.9% * $stop-at,
+    0.042: 81.4% * $stop-at,
+    0.011: 90.6% * $stop-at,
+    0: 100% * $stop-at
+  );
+  @if type-of($color) != color {
+    @return null;
+  }
+  $rgba: "#{red($color)},#{green($color)},#{blue($color)}";
+  $color-stops: ();
+  @each $alpha, $stop in $easeOutSine-gradient {
+    $color-stops: append($color-stops, unquote("rgba(#{$rgba}, #{$alpha}) #{$stop}"), "comma");
+  }
+  @return $color-stops;
+}
+
+
+
+
+/*
+Layered box-shadows via Sass mixin
+at https://codepen.io/emdeoh/pen/zYYGZGx
+*/
+@function diffuse-shadows($size, $color: rgba(0,0,0,.125), $multiply: false, $y: $size, $x: 0) {
+  $ownX: $x != 0;
+  $ownY: $y != $size;
+  $yMultiplier: $y / $size;
+  @if $ownY == false {
+    $y: $i;
+  }
+  @if $ownY == true {
+    $y: 1;
+  }
+  $val: 0 1px 1px $color;
+  @for $i from 1 through $size {
+    @if $i % 2 == 0 {
+      @if $multiply == true {
+        $i: $i * 2;
+        @if $ownX == true {
+          $x: $x * 2;
+        }
+        @if $ownY == true {
+          $y: $y + $yMultiplier * 2;
+        }
+      }
+      @if $multiply == false {
+        @if $ownY == true {
+          $y: $y + $yMultiplier;
+        }
+      }
+      $val: #{$val}, #{$x}px #{$y}px #{$i}px #{$color};
+    }
+  }
+  @return $val;
+}
+
+@mixin diffuse($size, $color, $multiply) {
+  box-shadow: diffuse-shadows($size, $color, $multiply);
+}

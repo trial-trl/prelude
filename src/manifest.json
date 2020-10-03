@@ -1,0 +1,18 @@
+{
+  "name": "Sapiens",
+  "short_name": "Sapiens",
+  "description": "",
+  "icons": [
+    {
+      "src": "img/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "lang": "pt-BR",
+  "start_url": "https://sapiensead.com.br",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#342046",
+  "theme_color": "#342046"
+}

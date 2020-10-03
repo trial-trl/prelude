@@ -1,0 +1,22 @@
+{
+  "name": "E3Palestras",
+  "authors": [
+    "mlsm <mlsm@trialent.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "trl-no-redo": "0.3.0",
+    "handlebars": "^4.1.0"
+  }
+}

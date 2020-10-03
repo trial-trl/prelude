@@ -1,0 +1,21 @@
+div#puzzle
+    div#puzzle__canvas
+    div#home__puzzle-ui-group
+        button.floating-icon#puzzle-ui--take-screenshot
+            i.s-photo
+        div#puzzle-ui--change-color-group(hidden)
+            button.floating-icon#puzzle-ui--change-color
+                i.s-color
+                i.s-failure(hidden)
+            div#puzzle-ui--change-color__colors(hidden)
+                button.floating-icon#puzzle-ui--change-color__red
+                button.floating-icon#puzzle-ui--change-color__green
+                button.floating-icon#puzzle-ui--change-color__blue
+        button.floating-icon#puzzle-ui--spawn-positive
+            i.s-add-puzzle-negative
+        button.floating-icon#puzzle-ui--spawn-negative
+            i.s-add-puzzle-positive
+    #screenshot-ui(hidden)
+        a.button#screenshot-ui--close
+            i.s-failure
+            | Fechar
