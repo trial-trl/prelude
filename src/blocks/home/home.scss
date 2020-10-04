@@ -1,0 +1,107 @@
+@import '../../css/_global';
+
+#home {
+
+  #home__intro {
+    text-align: center;
+
+    span {
+      @include themify($themes) {
+        color: themed('primary');
+      }
+    }
+  }
+
+  #home__services {
+    text-align: center;
+
+    .category {
+      display: inline-table;
+      @include column-width(3);
+
+      header {
+        text-align: center;
+
+        i {
+          display: inline-block;
+          width: 100px;
+          height: 100px;
+          background-image: url(../../svg/services-categories-icons.svg);
+          background-repeat: no-repeat;
+          background-size: 352% 100%;
+        }
+
+        h4 {
+          margin-top: 0
+        }
+      }
+
+      &.tech .services {
+        border-left-color: $colorTechGames;
+      }
+
+      &.design .services {
+        border-left-color: $colorDesign;
+      }
+
+      &.marketing .services {
+        border-left-color: $colorMarketing;
+      }
+
+      .services {
+        border-left: 10px solid;
+        text-align: left;
+
+        .service {
+          display: table;
+          margin: 0 20px;
+          font-family: $font__main;
+          color: $color__text-main;
+
+          i {
+            display: table-cell;
+            width: 50px;
+            height: 28px;
+            background-image: url(../../svg/services-icons.svg);
+            background-repeat: no-repeat;
+            background-size: 860% 100%;
+          }
+
+          h5 {
+            margin: 10px;
+          }
+        }
+      }
+    }
+  }
+
+  #home__stats {
+    text-align: center;
+
+    .stats {
+      display: inline-table;
+      @include column-width(2);
+
+      h1 {
+        font-size: 4em;
+        margin-bottom: 0;
+        line-height: 0;
+
+        &::before {
+          position: relative;
+          content: "+";
+          font-size: 1em;
+        }
+      }
+    }
+  }
+
+  #home__languages {
+    text-align: center;
+  }
+
+  #home__standards {
+    text-align: center;
+  }
+
+}
