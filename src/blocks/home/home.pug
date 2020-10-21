@@ -1,0 +1,42 @@
+mixin serviceCategory(title, clazz, iconX)
+    .category(class=clazz)
+        header
+            i(style="background-position: " + iconX + "%")
+            h4= title
+        .services
+            if block
+                block
+                
+mixin service(title, cat, iconX)
+    a.service(href="/portfolio/" + cat)
+        i(style="background-position: " + iconX + "%")
+        h5= title
+
+#home
+    h1#home__intro
+        | <span>#</span>Somos<span>Inspirados</span><br />
+        | a criar experiências digitais<br /><span>simples</span> e <span>verdadeiras</span>
+    #home__services
+        +serviceCategory('Tecnologia', 'tech', 0)
+            +service('Apps nativos', 'apps-nativos', 0)
+            +service('Apps híbridos', 'apps-hibridos', 17.1)
+            +service('Apps web, PWA & SPA', 'apps-web', 34.4)
+            +service('Sites & Blogs', 'sites-blogs', 50)
+        +serviceCategory('Design', 'design', 51)
+            +service('UI & UX', 'ui-ux', 66)
+            +service('Identidade Visual', 'identidade-visual', 82.7)
+            +service('Motion Design', 'motion-design', 100)
+        +serviceCategory('Marketing', 'marketing', 102)
+            +service('Branding', 'branding', 0)
+    #home__stats
+        .stats
+            h1.color-primary 7
+            h5 clientes
+        .stats
+            h1.color-primary 20
+            h5 projetos
+    #home__languages
+        h3 pra criar as <span class="color-primary">melhores experiências</span> pra você, <br /> as linguagens e ferramentas <span class="color-primary">mais incríveis</span> são usadas...
+        
+    #home__standards
+        h3 ...e as <span class="color-primary">melhores técnicas e padrões</span> também
