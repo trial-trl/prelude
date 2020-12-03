@@ -1,0 +1,79 @@
+doctype html
+//-
+  (c) 2018 TRIAL.
+  Created on 01/03/2018, 14:01:31.
+  
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  
+  See the License for the specific language governing permissions and
+  limitations under the License.
+html.no-js
+  head
+    meta(charset='UTF-8')
+    meta(name='theme-color', content='#2D86FF')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no')
+    link(rel='manifest', href=url.relative + '/manifest.json')
+
+    meta(property='og:title', content='')
+    meta(property='og:type', content='')
+    meta(property='og:url', content='')
+    meta(property='og:image', content='')
+
+    //- Add to home screen for Safari on iOS
+    meta(name='apple-mobile-web-app-capable', content='yes')
+    meta(name='apple-mobile-web-app-status-bar-style', content='#2D86FF')
+    meta(name='apple-mobile-web-app-title', content='E3 Eventos')
+    link(rel='apple-touch-icon', href=url.relative + '/svg/icon.png')
+    meta(name='msapplication-TileImage', content=url.relative + '/svg/icon.png')
+    meta(name='msapplication-TileColor', content='#2D86FF')
+
+    base(href=url.absolute)
+
+    link(rel='stylesheet', type='text/css', href=url.noredo + '/css/common')
+    link(rel='stylesheet', type='text/css', href=url.relative + '/css/normalize.css')
+    link(rel='stylesheet', type='text/css', href=url.relative + '/brand_assets/icons/css/sapiens.css')
+    link(rel='stylesheet', type='text/css', href=url.relative + '/css/main.css')
+    link(rel='stylesheet', type='text/css', href='https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.6.1/viewer.min.css')
+    link(rel='icon', href=url.relative + '/img/favicon.jpg', sizes='64x64')
+
+    title
+      if title 
+        |#{title}
+      | TRIAL
+  body
+    header#header
+      #header-bg
+      #header-wrap
+        a(href='/' data-add-class='default')#the-brand
+          trl-logo(trl-compact='true' trl-scale='.33' trl-color='#fff')
+        #header-wrap-bottom
+          input(type="checkbox")#page-theme-toggle
+          #header-search
+            input(type='search' placeholder='Pesquisar...')
+            i.fas.fa-search
+          nav#main-menu
+            a(data-add-class='techgames')
+              | Tecnologia 
+              br
+              | &amp; Games
+            a(data-add-class='design') Design
+            a(data-add-class='marketing') Marketing
+      #header-social-links
+        a(href='')
+          img(src='images/FB_icon.svg')
+        a(href='')
+          img(src='images/IG_icon.svg')
+        a(href='')
+          img(src='images/TW_icon.svg')
+    section#content
+      main#main-content
+    script(data-cfasync="false", async, src='/bower_components/loadjs/dist/loadjs.js')
+    script(data-cfasync="false", async, src=url.relative + '/js/TRL.js')
