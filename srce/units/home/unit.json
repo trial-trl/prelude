@@ -1,0 +1,5 @@
+{
+    "endpoint": "codetracker:repositories/count",
+    "expect": "application/json",
+    "lazy": true
+}

@@ -1,0 +1,4 @@
+{
+    "endpoint": "codetracker:repositories/count",
+    "expect": "application/json"
+}

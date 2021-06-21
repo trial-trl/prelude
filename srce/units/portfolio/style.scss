@@ -1,0 +1,73 @@
+#portfolio {
+    
+    .project {
+        position: relative;
+        float: left;
+        width: 100%;
+
+        &:not(:hover) .project__hover {
+            display: none
+        }
+
+        .project__main {
+            position: relative;
+            float: left;
+
+            img {
+                float: left;
+                width: 150px;
+                height: 200px;
+                background-color: #24c742;
+            }
+            
+            .shape {
+                shape-outside: polygon(90% 0, 100% 0, 10% 100%, 0 100%);
+                float: left;
+                height: 50px;
+                width: 15px;
+            }
+
+            .skew {
+                float: left;
+                transform: skewX(-16deg)
+            }
+
+            hgroup {
+                float: left;
+
+                * {
+                    transform: skewX(16deg)
+                }
+            }
+        }
+
+        .project__main, .project__hover {
+            width: 100%;
+        }
+
+        .project__hover {
+            position: absolute;
+            float: right;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            
+            .project__hover--patterns {
+                float: right;
+                clear: both;
+            }
+
+            .project__hover--banner {
+                float: right;
+                clear: both;
+
+                .language {
+                    float: left;
+                }
+            }
+
+        }
+
+    }
+
+}

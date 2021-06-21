@@ -19,12 +19,13 @@ const concat = require( 'gulp-concat' );
 const cache = require( 'gulp-cache' );
 const prefixer = require( 'gulp-autoprefixer' );
 const csso = require( 'gulp-csso' );
+const exec = require( 'gulp-exec' );
 const { camelCase } = require( 'camel-case' );
 
 const prod = process.env.NODE_ENV === 'production';
 
 const paths = {
-    src: 'src/',
+    src: 'srce/',
     dist: 'dist/',
     tmp: 'tmp/'
 };
@@ -56,47 +57,59 @@ function cacheClear( cb ) {
 }
 
 function pugCompile( cb ) {
-    var g1 = src( [ paths.src + '**/*.pug', '!' + paths.src + 'templates/*.pug', '!' + paths.src + 'index.pug' ] )
+    var g0 = src( [ paths.src + '**/*.pug', '!' + paths.src + 'templates/*.pug', paths.src + 'index.pug' ], {allowEmpty: true} )
+                .pipe( exec(file => {
+                    return `php tasks/compile/pug.php ${file.path.replace(file.cwd + '\\', '').replace(file.basename, '')} ${'tmp' + file.path.replace(file.base, '').replace(file.basename, '')}`;
+                }, {
+                    continueOnError: false, // default = false, true means don't emit error event
+                    pipeStdout: false, // default = false, true means stdout is written to file.contents
+                } ) )
+                .pipe( exec.reporter( {
+                    err: true, // default = true, false means don't write err
+                    stderr: true, // default = true, false means don't write stderr
+                    stdout: true // default = true, false means don't write stdout
+                } ) );
+    var g1 = src( [ paths.src + '**/*.pug', '!' + paths.src + 'templates/*.pug', '!' + paths.src + 'index.pug' ], {allowEmpty: true} )
                 .pipe( plumber() )
                 .pipe( cache( pug( { client: true, data: prod ? pugDataProd : pugDataDev, compileDebug: false } ) ) )
-                .pipe( rename( { extname: '.pug.js' } ) )
+                .pipe( rename( { extname: '.js' } ) )
                 .pipe( tap( function ( file ) {
+                    var path = file.path.split('\\');
+                    path.pop();
+                    var unit = path.pop();
                     file.contents = Buffer.concat( [
-                        new Buffer( 'window.Pug = window.Pug || {}; window.Pug.blocks = window.Pug.blocks || {}; Pug.blocks["' + path.basename(file.path, '.pug.js') + '"] = (function(){' ),
-                        file.contents
-                    ] );
-                    file.contents = Buffer.concat( [
+                        Buffer.from( 'window.Pug = window.Pug || {}; window.Pug.units = window.Pug.units || {}; Pug.units["' + unit + '"] = (function(){' ),
                         file.contents,
-                        new Buffer( 'return template;})()' )
+                        Buffer.from( 'return template;})()' )
                     ] );
                 } ) )
                 .pipe( _if( prod, uglify() ) )
                 .pipe( dest( prod ? paths.dist : paths.tmp ) );
-    var g2 = src( paths.src + 'templates/*.pug' )
+    var g2 = src( paths.src + 'templates/*.pug', {allowEmpty: true} )
                 .pipe( plumber() )
                 .pipe( cache( pug( { client: true, data: prod ? pugDataProd : pugDataDev, compileDebug: false } ) ) )
                 .pipe( tap( function ( file ) {
                     file.contents = Buffer.concat( [
-                        new Buffer( 'window.Pug = window.Pug || {}; window.Pug.templates = window.Pug.templates || {}; Pug.templates["' + path.basename(file.path, '.js') + '"] = (function(){' ),
-                        file.contents
-                    ] );
-                    file.contents = Buffer.concat( [
+                        Buffer.from( 'window.Pug = window.Pug || {}; window.Pug.templates = window.Pug.templates || {}; Pug.templates["' + path.basename(file.path, '.js') + '"] = (function(){' ),
                         file.contents,
-                        new Buffer( 'return template;})()' )
+                        Buffer.from( 'return template;})()' )
                     ] );
                 } ) )
                 .pipe( concat( 'templates.min.js' ) )
                 .pipe( _if( prod, uglify() ) )
                 .pipe( dest( prod ? paths.dist : paths.tmp ) );
-    var g3 = src( paths.src + 'index.pug' )
+    /**
+     * 
+    var g3 = src( paths.src + 'index.pug', {allowEmpty: true} )
                 .pipe( plumber() )
-                .pipe( cache( pug( { client: false, data: prod ? pugDataProd : pugDataDev, compileDebug: false } ) ) )
+                .pipe( cache( pug( { pretty: true, client: false, data: prod ? pugDataProd : pugDataDev, compileDebug: false } ) ) )
                 .pipe( dest( prod ? paths.dist : paths.tmp ) );
-    return merge( g1, g2, g3 );
+    */
+    return merge( g0, g1, g2 );
 }
 
 function sass2css( cb ) {
-    return src( paths.src + '**/*.scss' )
+    return src( paths.src + '**/*.scss', {allowEmpty: true} )
             .pipe( plumber() )
             .pipe( cache( sass() ) )
             .pipe( prefixer( {
@@ -108,7 +121,7 @@ function sass2css( cb ) {
 }
 
 function generateTheme( cb ) {
-    return src( paths.src + 'css/_themes.scss' )
+    return src( paths.src + 'css/_themes.scss', {allowEmpty: true} )
             .pipe( replace( '$themes: ', 'var themes = ' ) )
             .pipe( replace( /\(/g, '{' ) )
             .pipe( replace( /\)/g, '}' ) )
@@ -123,45 +136,45 @@ function generateTheme( cb ) {
 }
 
 function mergeConvertedCssWithMain( cb ) {
-    return src( [ (prod ? paths.dist : paths.tmp) + 'js/themes.js' ] )
+    return src( [ (prod ? paths.dist : paths.tmp) + 'js/themes.js', (prod ? paths.dist : paths.tmp) + 'js/main.js' ], {allowEmpty: true} )
             .pipe( concat( 'main.js' ) )
             .pipe( _if( prod, uglify() ) )
             .pipe( dest( (prod ? paths.dist : paths.tmp) + 'js' ) );
 }
 
 function js( cb ) {
-    return src( paths.src + '**/*.js' )
+    return src( paths.src + '**/*.js', {allowEmpty: true} )
             .pipe( plumber() )
             .pipe( _if( prod, uglify() ) )
             .pipe( dest( prod ? paths.dist : paths.tmp ) );
 }
 
 function json( cb ) {
-    return src( paths.src + '**/*.json' )
+    return src( paths.src + '**/*.json', {allowEmpty: true} )
             .pipe( plumber() )
             .pipe( _if( prod, uglify() ) )
             .pipe( dest( prod ? paths.dist : paths.tmp ) );
 }
 
 function keep( cb ) {
-    var g1 = src( paths.src + '/svg/**/*' )
+    var g1 = src( paths.src + '/svg/**/*', {allowEmpty: true} )
                 .pipe( dest( (prod ? paths.dist : paths.tmp) + '/svg' ) );
-    var g2 = src( paths.src + '/css/*.css' )
+    var g2 = src( paths.src + '/css/*.css', {allowEmpty: true} )
                 .pipe( dest( (prod ? paths.dist : paths.tmp) + '/css' ) );
-    var g3 = src( paths.src + '/webfonts/**/*' )
+    var g3 = src( paths.src + '/webfonts/**/*', {allowEmpty: true} )
                 .pipe( dest( (prod ? paths.dist : paths.tmp) + '/webfonts' ) );
-    var g4 = src( 'bower_components/**/*' )
+    var g4 = src( 'bower_components/**/*', {allowEmpty: true} )
                 .pipe( dest( (prod ? paths.dist : paths.tmp) + '/bower_components' ) );
-    var g6 = src( paths.src + '/img/**/*' )
+    var g5 = src( paths.src + '/img/**/*', {allowEmpty: true} )
                 .pipe( dest( (prod ? paths.dist : paths.tmp) + '/img' ) );
-    return merge( g1, g2, g3, g4, g6 );
+    return merge( g1, g2, g3, g4, g5 );
 }
 
 function startServer( cb ) {
     browserSync.init( {
         injectChanges: true,
         server: {
-            baseDir: paths.tmp,
+            baseDir: '/',
             middleware: [
                 history()
             ]
@@ -185,7 +198,15 @@ function startWatch( done ) {
     done();
 }
 
-const build = series( pugCompile, sass2css, generateTheme, js, mergeConvertedCssWithMain, json, keep );
+const build = series( 
+    pugCompile,
+    sass2css,
+    generateTheme,
+    js,
+    mergeConvertedCssWithMain,
+    json,
+    keep
+);
 
 exports.cacheClear = cacheClear;
 exports.build = series( clean, build, reload );
