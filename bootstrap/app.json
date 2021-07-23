@@ -1,0 +1,14 @@
+{
+    "datasource": {
+        "myApi": "https://your-api.com.br"
+    },
+    "units": {
+        "app": "/tmp",
+        "home": "/tmp/units/home",
+        "about": "/tmp/units/about"
+    },
+    "routes": {
+        "/": "home",
+        "/about": "about"
+    }
+}

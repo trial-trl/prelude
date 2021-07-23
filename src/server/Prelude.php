@@ -19,12 +19,6 @@ class Prelude
      */
     function __construct()
     {
-        $d = json_decode(file_get_contents(getcwd() . DIRECTORY_SEPARATOR . 'app.json'), true);
-        define('APP', $d);
-        define('DATASOURCE', $d['datasource']);
-        define('UNITS', $d['units']);
-        define('ROUTES', $d['routes']);
-
         $this->_unit = new Unit('app', '<!-- injectAppUnit -->');
     }
 
@@ -73,6 +67,7 @@ class Prelude
         $meta = '';
         $head = '';
         $title = '';
+        $footer = '';
 
         $units = array_merge([$this->_unit], $this->_unit->_dependencies);
 
@@ -89,6 +84,9 @@ class Prelude
             if (!empty($unit->_title)) {
                 $title = $unit->_title;
             }
+            if (!empty($unit->_footer)) {
+                $footer = $unit->_footer;
+            }
             $styles .= sprintf($template_link, $unit->getStyleUri(), $unit->getType());
             $controllers .= sprintf($template_script, $unit->getControllerUri(), $unit->getType());
             $templates .= @file_get_contents($unit->getTemplateClientPath()) . ';';
@@ -99,7 +97,7 @@ class Prelude
         $render = str_replace('<!-- injectHeadDeclarations -->', $head ?: '', $render);
         $render = str_replace('<!-- injectTitle -->', '<title>' . trim($title ?: '') . '</title>', $render);
         $render = str_replace('<!-- injectStyleDependencies -->', $styles, $render);
-        $render = str_replace('<!-- injectControllerDependencies -->', $controllers, $render);
+        $render = str_replace('<!-- injectControllerDependencies -->', $controllers . $footer, $render);
 
         $declaration = $this->transformAppDeclarationToJavascript();
         $encoded_data = json_encode($data);

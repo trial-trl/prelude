@@ -1,0 +1,4 @@
+{
+    "endpoint": "myApi:resource/path",
+    "expect": "mime/type"
+}
