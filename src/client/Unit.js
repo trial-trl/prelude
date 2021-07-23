@@ -66,6 +66,10 @@ window.T = (function (T) {
         });
     }
 
+    Unit.prototype.getDeclaration = function () {
+        return window.app.units[this.type];
+    };
+
     Unit.prototype.getName = function () {
         return this.type + ':' + this.key;
     };
@@ -75,7 +79,7 @@ window.T = (function (T) {
     };
 
     Unit.prototype.getTemplate = function () {
-        return window.app.units[this.type].location + '/template.js';
+        return window.app.units[this.type].location + '/template.' + (this.getDeclaration().template === 'php' ? 'php' : 'js');
     };
 
     Unit.prototype.getStyle = function () {
@@ -100,7 +104,7 @@ window.T = (function (T) {
                         loading: this.__template.args.loading || false
                     });
                 },
-                onrender: function () {
+                ontemplateready: function () {
                     console.log(that.getType(),'onrender');
                     loadDependencies.call(that, requestParams, customData);
                 }

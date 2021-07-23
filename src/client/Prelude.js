@@ -97,7 +97,7 @@ window.T = (function (T) {
             return {
                 init: function (requestParams, customData) {
                     _state = customData;
-                    return _app.render(_routerOutlet.dataset.unit, requestParams, customData);
+                    return _app.render('app', requestParams, customData);
                 }
             };
         }

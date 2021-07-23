@@ -25,9 +25,9 @@ const { camelCase } = require( 'camel-case' );
 const prod = process.env.NODE_ENV === 'production';
 
 const paths = {
-    src: 'srce/',
-    dist: 'dist/',
-    tmp: 'tmp/'
+    src: process.env.REAL_CWD + '/src/',
+    dist: process.env.REAL_CWD + '/dist/',
+    tmp: process.env.REAL_CWD + '/tmp/'
 };
 const pugDataProd = { 
     url: { 
@@ -59,7 +59,7 @@ function cacheClear( cb ) {
 function pugCompile( cb ) {
     var g0 = src( [ paths.src + '**/*.pug', '!' + paths.src + 'templates/*.pug', paths.src + 'index.pug' ], {allowEmpty: true} )
                 .pipe( exec(file => {
-                    return `php tasks/compile/pug.php ${file.path.replace(file.cwd + '\\', '').replace(file.basename, '')} ${'tmp' + file.path.replace(file.base, '').replace(file.basename, '')}`;
+                    return `php tasks/compile/pug.php ${file.path.replace(file.cwd + '\\', '').replace(file.basename, '')} ${paths.tmp + file.path.replace(file.base, '').replace(file.basename, '')}`;
                 }, {
                     continueOnError: false, // default = false, true means don't emit error event
                     pipeStdout: false, // default = false, true means stdout is written to file.contents
@@ -69,7 +69,7 @@ function pugCompile( cb ) {
                     stderr: true, // default = true, false means don't write stderr
                     stdout: true // default = true, false means don't write stdout
                 } ) );
-    var g1 = src( [ paths.src + '**/*.pug', '!' + paths.src + 'templates/*.pug', '!' + paths.src + 'index.pug' ], {allowEmpty: true} )
+    var g1 = src( [ paths.src + '**/template.pug', paths.src + '**/index.pug', '!' + paths.src + 'templates/*.pug', '!' + paths.src + 'index.pug' ], {allowEmpty: true} )
                 .pipe( plumber() )
                 .pipe( cache( pug( { client: true, data: prod ? pugDataProd : pugDataDev, compileDebug: false } ) ) )
                 .pipe( rename( { extname: '.js' } ) )
@@ -98,6 +98,8 @@ function pugCompile( cb ) {
                 .pipe( concat( 'templates.min.js' ) )
                 .pipe( _if( prod, uglify() ) )
                 .pipe( dest( prod ? paths.dist : paths.tmp ) );
+    var g3 = src( paths.src + '**/*.php' )
+                .pipe( dest( prod ? paths.dist : paths.tmp ) );
     /**
      * 
     var g3 = src( paths.src + 'index.pug', {allowEmpty: true} )
@@ -105,7 +107,7 @@ function pugCompile( cb ) {
                 .pipe( cache( pug( { pretty: true, client: false, data: prod ? pugDataProd : pugDataDev, compileDebug: false } ) ) )
                 .pipe( dest( prod ? paths.dist : paths.tmp ) );
     */
-    return merge( g0, g1, g2 );
+    return merge( g0, g1, g2, g3 );
 }
 
 function sass2css( cb ) {
@@ -190,7 +192,7 @@ function reload( done ) {
 
 function startWatch( done ) {
     watch( './gulpfile.js' ).on( 'change', series( build, reload ) );
-    watch( paths.src + '**/*.pug', series( pugCompile, reload ) );
+    watch( [paths.src + '**/*.pug', paths.src + '**/*.php'], series( pugCompile, reload ) );
     watch( paths.src + '**/*.scss', series( sass2css ) );
     watch( paths.src + 'css/_themes.scss', series( sass2css, generateTheme, mergeConvertedCssWithMain, reload ) );
     watch( paths.src + '**/*.js', series( js, mergeConvertedCssWithMain, reload ) );

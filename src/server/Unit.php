@@ -17,6 +17,7 @@ class Unit
     public string $_meta;
     public string $_head;
     public string $_title;
+    public string $_footer;
     public array $_dependencies = [];
 
     /**
@@ -272,6 +273,15 @@ class Unit
     /**
      * 
      */
+    private function parseDeclarationFooter(array $matches)
+    {
+        $this->_footer = $matches[1];
+        return '';
+    }
+    
+    /**
+     * 
+     */
     private function declareDataUnit(string $tags)
     {
         return preg_replace('/<([a-z]{1,)/', '<$1 data-unit="' . $this->getType() . '"', $tags);
@@ -302,6 +312,11 @@ class Unit
             [$this, 'parseDeclarationTitle'],
             $content
         );
+        $content = preg_replace_callback(
+            '/<!-- #footer -->(.*)<!-- footer# -->/is',
+            [$this, 'parseDeclarationFooter'],
+            $content
+        );
 
         return $content;
     }
@@ -311,7 +326,7 @@ class Unit
      */
     private function loadDependencies(string $content, $data = [], $parentData = [])
     {
-        preg_match_all('/^.*\bdata-unit\b=\"([a-zA-Z0-9]{1,})\".*$/m', $content, $dependencies);
+        preg_match_all('/^.*\bdata-unit\b=\"([a-zA-Z0-9-]{1,})\".*$/m', $content, $dependencies);
 
         foreach ($dependencies[1] as $i => $dependency) {
             $caller = $dependencies[0][$i];

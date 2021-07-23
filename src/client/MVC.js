@@ -330,13 +330,12 @@ window.T = (function (T) {
 
                         var declaration = window.app.units[this.__unit.getType()];
 
-                        var xhr = new XMLHttpRequest();
-
                         var endpoint = declaration.endpoint.split(':');
                         var base = endpoint[0];
                         var route = endpoint[1];
                         endpoint = window.app.datasource[base] + route;
 
+                        var xhr = new XMLHttpRequest();
                         xhr.open('GET', endpoint);
                         xhr.setRequestHeader('Accept', declaration.expect);
                         xhr.onerror = xhr.onloadend = _endpointResult;
@@ -520,11 +519,27 @@ window.T = (function (T) {
 
                 config.url = this.__unit.getTemplate();
 
-                loadjs(config.url, {
-                    success() {
+                if (config.url.indexOf('.php') !== -1) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', config.url);
+                    xhr.setRequestHeader('Accept', 'text/html');
+                    xhr.onerror = xhr.onloadend = function (e) {
+                        console.log(e.target.response);
+                        window.Pug.units[that.__unit.getType()] = (function (template) {
+                            return function () {
+                                return template;
+                            };
+                        })(e.target.response);
                         _notifyTemplateIsLoaded.call(that);
-                    }
-                });
+                    };
+                    xhr.send();
+                } else {
+                    loadjs(config.url, {
+                        success() {
+                            _notifyTemplateIsLoaded.call(that);
+                        }
+                    });
+                }
             }
             
             function _notifyTemplateIsLoaded() {
@@ -548,7 +563,7 @@ window.T = (function (T) {
                 if (this.__template.parts && typeof this.__template.parts === 'string') {
                     var parts = {};
 
-                    this.__template.parts.replace(
+                    this.__template.parts = this.__template.parts.replace(
                         /<!-- #html -->(.*)<!-- html# -->/is,
                         function (whole, part) {
                             parts.html = part.match('/<attr (.*)><\/attr>/', part);
@@ -558,7 +573,7 @@ window.T = (function (T) {
                         },
                     );
 
-                    this.__template.parts.replace(
+                    this.__template.parts = this.__template.parts.replace(
                         /<!-- #meta -->(.*)<!-- meta# -->/is,
                         function (whole, part) {
                             parts.meta = _declareDataUnit.call(that, part);
@@ -566,7 +581,7 @@ window.T = (function (T) {
                         },
                     );
 
-                    this.__template.parts.replace(
+                    this.__template.parts = this.__template.parts.replace(
                         /<!-- #head -->(.*)<!-- head# -->/is,
                         function (whole, part) {
                             parts.head = _declareDataUnit.call(that, part);
@@ -574,10 +589,18 @@ window.T = (function (T) {
                         },
                     );
 
-                    this.__template.parts.replace(
+                    this.__template.parts = this.__template.parts.replace(
                         /<!-- #title -->(.*)<!-- title# -->/is,
                         function (whole, part) {
                             parts.title = part;
+                            return '';
+                        },
+                    );
+
+                    this.__template.parts = this.__template.parts.replace(
+                        /<!-- #footer -->(.*)<!-- footer# -->/is,
+                        function (whole, part) {
+                            parts.footer = part;
                             return '';
                         },
                     );
@@ -637,6 +660,11 @@ window.T = (function (T) {
                 if (!this.__unit.isLoaded()) {
                     _loadTemplate.call(that);
                 } else {
+                    window.Pug.units[this.__unit.getType()] = (function (template) {
+                        return function () {
+                            return template;
+                        };
+                    })(this.__unit.getRoot().innerHTML);
                     _notifyTemplateIsLoaded.call(this);
                     console.log(this.__unit.getType(), 'notify', this.__unit.getRoot());
                     this.__element = this.__unit.getRoot().firstChild;
@@ -741,6 +769,10 @@ window.T = (function (T) {
 
                 if (parts.title) {
                     document.title = parts.title;
+                }
+
+                if (parts.footer) {
+                    document.body.innerHTML += parts.footer;
                 }
             }
 

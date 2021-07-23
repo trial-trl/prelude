@@ -66,7 +66,7 @@ window.T = (function (T) {
                 return unit + '/controller.js';
             },
             getTemplate: function () {
-                return unit + '/template.js';
+                return unit + '/template.php';
             },
             getStyle: function () {
                 return unit + '/style.css';
@@ -97,6 +97,7 @@ window.T = (function (T) {
             return {
                 init: function (requestParams, customData) {
                     _state = customData;
+                    new T.Unit('app', _root.children[0]).render(requestParams, customData);
                     return _app.render(_routerOutlet.dataset.unit, requestParams, customData);
                 }
             };
@@ -175,6 +176,10 @@ window.T = (function (T) {
         });
     }
 
+    Unit.prototype.getDeclaration = function () {
+        return window.app.units[this.type];
+    };
+
     Unit.prototype.getName = function () {
         return this.type + ':' + this.key;
     };
@@ -184,7 +189,7 @@ window.T = (function (T) {
     };
 
     Unit.prototype.getTemplate = function () {
-        return window.app.units[this.type].location + '/template.js';
+        return window.app.units[this.type].location + '/template.' + (this.getDeclaration().template === 'php' ? 'php' : 'js');
     };
 
     Unit.prototype.getStyle = function () {
@@ -209,7 +214,7 @@ window.T = (function (T) {
                         loading: this.__template.args.loading || false
                     });
                 },
-                onrender: function () {
+                ontemplateready: function () {
                     console.log(that.getType(),'onrender');
                     loadDependencies.call(that, requestParams, customData);
                 }
@@ -258,6 +263,7 @@ window.T = (function (T) {
         }
         
         var dependencies = this.root.querySelectorAll('[data-unit]');
+        console.log('loadDependencies', dependencies);
 
         for (var i = 0, t = dependencies.length, dependency; i < t, dependency = dependencies[i]; i++) {
             this.dependencies.push(new Unit(dependency.dataset.unit + ':' + dependency.dataset.key, dependency).render(requestParams, customData));
@@ -1044,11 +1050,27 @@ window.T = (function (T) {
 
                 config.url = this.__unit.getTemplate();
 
-                loadjs(config.url, {
-                    success() {
+                if (config.url.indexOf('.php') !== -1) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', config.url);
+                    xhr.setRequestHeader('Accept', 'text/html');
+                    xhr.onerror = xhr.onloadend = function (e) {
+                        console.log(e.target.response);
+                        window.Pug.units[that.__unit.getType()] = (function (template) {
+                            return function () {
+                                return template;
+                            };
+                        })(e.target.response);
                         _notifyTemplateIsLoaded.call(that);
-                    }
-                });
+                    };
+                    xhr.send();
+                } else {
+                    loadjs(config.url, {
+                        success() {
+                            _notifyTemplateIsLoaded.call(that);
+                        }
+                    });
+                }
             }
             
             function _notifyTemplateIsLoaded() {
@@ -1072,7 +1094,7 @@ window.T = (function (T) {
                 if (this.__template.parts && typeof this.__template.parts === 'string') {
                     var parts = {};
 
-                    this.__template.parts.replace(
+                    this.__template.parts = this.__template.parts.replace(
                         /<!-- #html -->(.*)<!-- html# -->/is,
                         function (whole, part) {
                             parts.html = part.match('/<attr (.*)><\/attr>/', part);
@@ -1082,7 +1104,7 @@ window.T = (function (T) {
                         },
                     );
 
-                    this.__template.parts.replace(
+                    this.__template.parts = this.__template.parts.replace(
                         /<!-- #meta -->(.*)<!-- meta# -->/is,
                         function (whole, part) {
                             parts.meta = _declareDataUnit.call(that, part);
@@ -1090,7 +1112,7 @@ window.T = (function (T) {
                         },
                     );
 
-                    this.__template.parts.replace(
+                    this.__template.parts = this.__template.parts.replace(
                         /<!-- #head -->(.*)<!-- head# -->/is,
                         function (whole, part) {
                             parts.head = _declareDataUnit.call(that, part);
@@ -1098,7 +1120,7 @@ window.T = (function (T) {
                         },
                     );
 
-                    this.__template.parts.replace(
+                    this.__template.parts = this.__template.parts.replace(
                         /<!-- #title -->(.*)<!-- title# -->/is,
                         function (whole, part) {
                             parts.title = part;
@@ -1106,7 +1128,16 @@ window.T = (function (T) {
                         },
                     );
 
-                    parts.body = this.__template.parts;
+                    this.__template.parts = this.__template.parts.replace(
+                        /<!-- #footer -->(.*)<!-- footer# -->/is,
+                        function (whole, part) {
+                            parts.footer = part;
+                            return '';
+                        },
+                    );
+
+                    console.log(this.__template.parts.trim());
+                    parts.body = this.__template.parts.trim();
 
                     this.__template.parts = parts;
                 }
@@ -1161,6 +1192,11 @@ window.T = (function (T) {
                 if (!this.__unit.isLoaded()) {
                     _loadTemplate.call(that);
                 } else {
+                    window.Pug.units[this.__unit.getType()] = (function (template) {
+                        return function () {
+                            return template;
+                        };
+                    })(this.__unit.getRoot().innerHTML);
                     _notifyTemplateIsLoaded.call(this);
                     console.log(this.__unit.getType(), 'notify', this.__unit.getRoot());
                     this.__element = this.__unit.getRoot().firstChild;
@@ -1265,6 +1301,10 @@ window.T = (function (T) {
 
                 if (parts.title) {
                     document.title = parts.title;
+                }
+
+                if (parts.footer) {
+                    document.body.innerHTML += parts.footer;
                 }
             }
 
