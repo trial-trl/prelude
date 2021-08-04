@@ -1,0 +1,18 @@
+{
+    "name": "trial-trl/prelude",
+    "authors": [
+        {
+            "name": "Matheus Leonardo",
+            "email": "mlsm@trialent.com"
+        }
+    ],
+    "require": {
+        "pug-php/pug": "^3.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "T\\": "src/server",
+            "T\\Prelude\\": "src/server"
+        }
+    }
+}
